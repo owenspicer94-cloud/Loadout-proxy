@@ -10,10 +10,11 @@ async function fetchUpcomingGames() {
   ].join(' ');
 
   const res = await fetch('/api/igdb?endpoint=games', {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: query,
-  });
+  const res = await fetch('/api/igdb', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ endpoint: 'games', query: query }),
+});
 
   const games = await res.json();
   if (!Array.isArray(games)) throw new Error(games?.message || games?.error || JSON.stringify(games));
