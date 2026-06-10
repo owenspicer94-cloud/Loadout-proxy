@@ -1,8 +1,6 @@
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '1mb',
-    },
+    bodyParser: false,
   },
 };
 
@@ -19,7 +17,12 @@ export default async function handler(req, res) {
     );
     const { access_token } = await tokenRes.json();
 
-    const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+    const body = await new Promise((resolve, reject) => {
+      let data = '';
+      req.on('data', chunk => data += chunk);
+      req.on('end', () => resolve(data));
+      req.on('error', reject);
+    });
 
     const igdbRes = await fetch(`https://api.igdb.com/v4/${req.query.endpoint}`, {
       method: 'POST',
