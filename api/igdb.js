@@ -1,7 +1,3 @@
-export const config = {
-  api: { bodyParser: false },
-};
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -19,16 +15,7 @@ export default async function handler(req, res) {
     );
     const { access_token } = await tokenRes.json();
 
-    const body = await new Promise((resolve, reject) => {
-      let data = '';
-      req.on('data', chunk => data += chunk);
-      req.on('end', () => resolve(data));
-      req.on('error', reject);
-    });
-
-    const endpoint = Array.isArray(req.query.endpoint)
-      ? req.query.endpoint[0]
-      : req.query.endpoint;
+    const { endpoint, query } = req.body;
 
     const igdbRes = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
       method: 'POST',
@@ -37,7 +24,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${access_token}`,
         'Content-Type': 'text/plain',
       },
-      body,
+      body: query,
     });
 
     const data = await igdbRes.json();
