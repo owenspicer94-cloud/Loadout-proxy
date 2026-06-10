@@ -1,1 +1,35 @@
+async function fetchUpcomingGames() {
+  const now    = Math.floor(Date.now() / 1000);
+  const future = now + 90 * 86400;
 
+  const query = [
+    'fields name, cover.image_id, first_release_date, platforms.name, genres.name, involved_companies.company.name, involved_companies.developer, summary, hypes;',
+    'where first_release_date >= ' + now + ' & first_release_date <= ' + future + ' & cover.image_id != null & platforms != null & (category = 0 | category = 2 | category = 4) & version_parent = null;',
+    'sort hypes desc;',
+    'limit 40;'
+  ].join(' ');
+
+  const res = await fetch('/api/igdb?endpoint=games', {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: query,
+  });
+
+  const games = await res.json();
+  if (!Array.isArray(games)) throw new Error(games?.message || games?.error || JSON.stringify(games));
+  
+  return games
+    .filter(g => g.first_release_date && g.name && g.cover?.image_id)
+    .map(g => ({
+      id:          g.id,
+      title:       g.name,
+      releaseDate: new Date(g.first_release_date * 1000).toISOString().split('T')[0],
+      platforms:   (g.platforms||[]).map(p=>p.name).filter(Boolean),
+      genres:      (g.genres||[]).map(x=>x.name).filter(Boolean),
+      developer:   g.involved_companies?.find(c=>c.developer)?.company?.name || 'Unknown',
+      description: g.summary || 'No description available.',
+      coverUrl:    'https://images.igdb.com/igdb/image/upload/t_cover_big/' + g.cover.image_id + '.jpg',
+      hypes:       g.hypes || 0,
+    }))
+    .sort((a,b) => new Date(a.releaseDate)-new Date(b.releaseDate));
+}
