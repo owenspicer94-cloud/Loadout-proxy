@@ -1,7 +1,5 @@
 export const config = {
-  api: {
-    bodyParser: false,
-  },
+  api: { bodyParser: false },
 };
 
 export default async function handler(req, res) {
@@ -12,7 +10,11 @@ export default async function handler(req, res) {
 
   try {
     const tokenRes = await fetch(
-      `https://id.twitch.tv/oauth2/token?client_id=${process.env.IGDB_CLIENT_ID}&client_secret=${process.env.IGDB_CLIENT_SECRET}&grant_type=client_credentials`,
+      'https://id.twitch.tv/oauth2/token?' + new URLSearchParams({
+        client_id: process.env.IGDB_CLIENT_ID,
+        client_secret: process.env.IGDB_CLIENT_SECRET,
+        grant_type: 'client_credentials',
+      }),
       { method: 'POST' }
     );
     const { access_token } = await tokenRes.json();
@@ -24,7 +26,11 @@ export default async function handler(req, res) {
       req.on('error', reject);
     });
 
-    const igdbRes = await fetch(`https://api.igdb.com/v4/${req.query.endpoint}`, {
+    const endpoint = Array.isArray(req.query.endpoint)
+      ? req.query.endpoint[0]
+      : req.query.endpoint;
+
+    const igdbRes = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
       method: 'POST',
       headers: {
         'Client-ID': process.env.IGDB_CLIENT_ID,
