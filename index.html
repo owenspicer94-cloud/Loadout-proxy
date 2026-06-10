@@ -9,7 +9,6 @@ async function fetchUpcomingGames() {
     'limit 40;'
   ].join(' ');
 
-  const res = await fetch('/api/igdb?endpoint=games', {
   const res = await fetch('/api/igdb', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
