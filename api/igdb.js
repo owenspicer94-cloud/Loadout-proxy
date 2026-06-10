@@ -17,11 +17,11 @@ export default async function handler(req, res) {
 
     const { endpoint, query } = req.body;
 
-    const igdbRes = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
+    const igdbRes = await fetch('https://api.igdb.com/v4/' + endpoint, {
       method: 'POST',
       headers: {
         'Client-ID': process.env.IGDB_CLIENT_ID,
-        'Authorization': `Bearer ${access_token}`,
+        'Authorization': 'Bearer ' + access_token,
         'Content-Type': 'text/plain',
       },
       body: query,
